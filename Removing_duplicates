@@ -1,0 +1,58 @@
+-- Create the table
+CREATE TABLE CountryCapitals (
+    id INT,
+    country_name VARCHAR(50),
+    capital_city VARCHAR(50)
+);
+
+-- Insert records, including duplicates
+INSERT INTO CountryCapitals (id, country_name, capital_city) VALUES
+(1, 'United Kingdom', 'London'),
+(2, 'Germany', 'Berlin'),
+(3, 'United Kingdom', 'London'), -- Duplicate
+(4, 'Italy', 'Rome'),
+(5, 'Indonesia', 'Jakarta'),
+(6, 'Japan', 'Tokyo'),
+(7, 'India', 'New Delhi'),
+(8, 'Indonesia', 'Jakarta'),    -- Duplicate
+(9, 'Germany', 'Berlin');       -- Duplicate
+
++------+----------------+--------------+
+| id   | country_name   | capital_city |
++------+----------------+--------------+
+|    1 | United Kingdom | London       |
+|    2 | Germany        | Berlin       |
+|    3 | United Kingdom | London       |
+|    4 | Italy          | Rome         |
+|    5 | Indonesia      | Jakarta      |
+|    6 | Japan          | Tokyo        |
+|    7 | India          | New Delhi    |
+|    8 | Indonesia      | Jakarta      |
+|    9 | Germany        | Berlin       |
++------+----------------+--------------+
+
+Find duplicate rows
+
+select country_name, capital_city, count(*)
+from cd
+group by country_name, capital_city
+having count(*) > 1;
+
++----------------+--------------+----------+
+| country_name   | capital_city | count(*) |
++----------------+--------------+----------+
+| United Kingdom | London       |        2 |
+| Germany        | Berlin       |        2 |
+| Indonesia      | Jakarta      |        2 |
++----------------+--------------+----------+
+
+DELETE FROM cd
+WHERE id IN (
+    SELECT id
+    FROM (
+        SELECT id,
+               ROW_NUMBER() OVER (PARTITION BY country_name, capital_city) AS rownum
+        FROM cd
+    ) AS sub
+    WHERE rownum > 1
+);
